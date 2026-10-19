@@ -12,7 +12,7 @@ $GGUF   = "https://huggingface.co/agosh/LTX-2.5-Comfy-GGUF/resolve/main"
 $Log    = "$Root\scripts\download.log"
 
 $comfy = @(
-  @("https://github.com/Comfy-Org/ComfyUI/releases/download/v0.42.1/ComfyUI_windows_portable_nvidia.7z", "$Root\downloads\ComfyUI_windows_portable_nvidia.7z")
+  ,@("https://github.com/Comfy-Org/ComfyUI/releases/download/v0.42.1/ComfyUI_windows_portable_nvidia.7z", "$Root\downloads\ComfyUI_windows_portable_nvidia.7z")
 )
 $core = @(
   @("$Mirror/vae/ltx-2.5-video-vae-bf16.safetensors",       "$Models\vae\ltx-2.5-video-vae-bf16.safetensors"),
@@ -33,12 +33,13 @@ $extras = @(
 )
 $int8 = @(
   # Highest quality that is still practical (20.5 GB, needs RAM offload)
-  @("$Mirror/diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors", "$Models\diffusion_models\ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors")
+  ,@("$Mirror/diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors", "$Models\diffusion_models\ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors")
 )
 
+# leading commas stop PowerShell from unrolling single-item lists into loose strings
 $list = switch ($Phase) {
-  "comfy" { $comfy } "core" { $core } "extras" { $extras } "int8" { $int8 }
-  "models" { $core + $extras + $int8 } default { $comfy + $core + $extras + $int8 }
+  "comfy" { , $comfy } "core" { , $core } "extras" { , $extras } "int8" { , $int8 }
+  "models" { , ($core + $extras + $int8) } default { , ($comfy + $core + $extras + $int8) }
 }
 
 function Say($m) { $l = "[{0:HH:mm:ss}] {1}" -f (Get-Date), $m; Write-Host $l; Add-Content $Log $l }

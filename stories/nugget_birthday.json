@@ -1,0 +1,28 @@
+{
+ "name": "nugget_birthday",
+ "settings": {
+  "model": "ltx-2.5-22b-distilled-transformer-nvfp4-ddb.safetensors",
+  "text_encoder": "gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors",
+  "two_stage": true, "width": 704, "height": 1280, "duration": 10, "fps": 24, "seed": 42,
+  "image": null, "image_strength": 0.7, "tile_size": 512, "temporal_size": 128,
+  "negative": "blurry, low quality, distorted, morphing, melting, extra limbs, duplicate characters, watermark, subtitles, random text, realistic human"
+ },
+ "parts": [
+  {
+   "title": "1 - The hook: tiny flame fail",
+   "prompt": "3D Pixar-style animation, cozy kitchen at night lit by warm golden light, vertical close framing. Nugget, a tiny chubby baby dragon with soft mint-green scales, big round amber eyes, tiny stubby wings, a pale yellow belly and a small curled tail, stands on a wooden kitchen table next to a big pink birthday cake with five unlit candles. In the background, a fat grumpy grey cat with half-closed eyes lies on the table watching. Nugget puffs out its chest, squeezes its eyes shut and tries to breathe fire at the candles, but only a tiny pathetic puff of grey smoke comes out with a squeak. Nugget looks at the camera, confused and embarrassed, then tries again: another sad little smoke puff. The grumpy cat slowly rolls its eyes. Camera slowly pushes in on Nugget's disappointed face. Sound: quiet kitchen ambience, a tiny squeaky puff sound twice, a small disappointed dragon whimper, a soft cartoon 'womp womp'."
+  },
+  {
+   "title": "2 - The build-up: the big sneeze",
+   "prompt": "3D Pixar-style animation, same cozy kitchen at night with warm golden light. Nugget, the tiny chubby baby dragon with soft mint-green scales, big round amber eyes, tiny stubby wings, a pale yellow belly and a small curled tail, takes a huge deep breath, its belly inflating like a balloon and its cheeks puffing out, eyes watering. Its nose twitches. It tries to hold back, then lets out an enormous sneeze that blasts a giant roaring fireball across the table straight into the big pink birthday cake. The cake explodes in a burst of fire, pink frosting and sprinkles flying everywhere in slow motion. Nugget is blown backwards and tumbles onto its tail. Camera shakes with the blast, then holds wide. Sound: a long deep inhale, a building 'ahh... ahh...', a huge 'ACHOO!' turning into a roaring whoosh of fire, a big comedic cake explosion boom, sprinkles pattering down."
+  },
+  {
+   "title": "3 - Chaos: the frosting cat",
+   "prompt": "3D Pixar-style animation, same cozy kitchen at night, now covered in pink frosting and sprinkles with small wisps of smoke. A big blob of pink frosting slowly slides down and lands with a splat on top of the fat grumpy grey cat's head, covering one eye. The cat sits completely still with a deadpan furious stare, frosting dripping off its whiskers. Nugget, the tiny chubby baby dragon with soft mint-green scales, big round amber eyes, tiny stubby wings and a pale yellow belly, peeks out from behind a burnt candle, freezes, then gives the cat a nervous guilty smile and slowly waves one tiny claw. A single sprinkle falls from the ceiling and bounces off the cat's nose. Camera does a slow dramatic zoom onto the cat's angry face, then whip pans to Nugget. Sound: a wet frosting splat, a long awkward silence with a clock ticking, a tiny nervous dragon giggle, a low grumpy cat growl, a single 'boop' as the sprinkle bounces."
+  },
+  {
+   "title": "4 - Twist: the wholesome ending",
+   "prompt": "3D Pixar-style animation, same cozy kitchen at night, warm soft golden light, frosting-covered table. Nugget, the tiny chubby baby dragon with soft mint-green scales, big round amber eyes, tiny stubby wings and a pale yellow belly, carefully pushes the last surviving slice of pink birthday cake toward the fat grumpy grey cat. Nugget then holds up a fluffy marshmallow on a small stick and very gently breathes a perfect tiny flame, toasting it golden brown, and offers it to the cat. The cat's grumpy face slowly melts into a soft smile, it leans in and nuzzles Nugget's head. They sit side by side eating cake as one candle flickers alight between them. Camera slowly pulls back to a cozy wide shot. Sound: a soft gentle flame crackle, a warm happy purr growing louder, a tiny happy dragon coo, a gentle music-box version of 'Happy Birthday' playing softly."
+  }
+ ]
+}

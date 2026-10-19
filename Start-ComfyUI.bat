@@ -10,5 +10,6 @@ echo.
 echo   ComfyUI : http://127.0.0.1:8188
 echo   LTX Lab : http://127.0.0.1:8188/ltxlab
 echo.
-.\python_embeded\python.exe -s ComfyUI\main.py --windows-standalone-build %*
+rem --vram-headroom 2: keep 2 GB VRAM free so Windows never spills GPU work into system RAM (10-50x slower)
+.\python_embeded\python.exe -s ComfyUI\main.py --windows-standalone-build --vram-headroom 2 %*
 pause

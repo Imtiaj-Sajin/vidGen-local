@@ -1,0 +1,16 @@
+{
+ "name": "grandma_traffic",
+ "settings": {
+  "model": "ltx-2.5-22b-distilled-transformer-nvfp4.safetensors",
+  "text_encoder": "gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors",
+  "two_stage": true, "width": 704, "height": 1280, "duration": 10, "fps": 24, "seed": 42,
+  "image": "grandma_ending_start.png", "image_strength": 0.7, "tile_size": 512, "temporal_size": 128,
+  "negative": "blurry, low quality, distorted, watermark, text, subtitles, logos, slow motion, sluggish pacing, extra fingers, distorted hands, morphing character, flickering face, inconsistent car design, melting car"
+ },
+ "parts": [
+  {
+   "title": "Ending - the savage wave",
+   "prompt": "Premium stylized 3D animated comedy short, Pixar-quality characters, vertical 9:16, fast-paced snappy cuts, no slow motion, warm sunset light on a city street. Characters: a big muscular bald man with a furious face in a black tank top, sitting in his huge lifted black pickup truck; a tiny elderly grandma with a neat silver hair bun, big round black sunglasses, a pearl necklace and a purple cardigan; her sleek glossy white futuristic electric car with smooth curves and thin LED light bars, no logos. Keep both characters and the white car exactly consistent. The bald man glares, breathing hard. Quick cut: the white car's falcon-wing door swings up with a smooth hiss and the grandma steps out holding a tiny coffee cup. She slowly lowers her sunglasses, looks straight at him, gives a tiny savage finger wave and blows him a kiss. Quick cut: the white car's headlights blink like a wink with a cheeky double horn beep, and its side mirrors fold in with a smug little click. Quick cut: the bald man's jaw drops, his eye twitches, and a vein pulses on his forehead. Final shot: the grandma strolls away calmly sipping her coffee without looking back, and the white car locks itself with a happy chirp, lights flashing. Sound: a smooth pneumatic hiss, a kiss sound, a cheeky 'beep-beep' horn, a small click, an angry snort, a happy lock chirp, and upbeat funky comedic music with punchy drums that ends on a playful sting."
+  }
+ ]
+}

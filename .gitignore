@@ -25,3 +25,6 @@ remote/password.txt
 remote/secret.txt
 remote/*.log
 tools/
+
+# story-mode progress (local video paths)
+stories/*.progress.json

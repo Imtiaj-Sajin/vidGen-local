@@ -69,15 +69,17 @@ def main():
     story_path = sys.argv[1]
     start = int(sys.argv[sys.argv.index("--start-part") + 1]) if "--start-part" in sys.argv else 1
     story = json.load(open(story_path, encoding="utf-8"))
+    progress_path = os.path.splitext(story_path)[0] + ".progress.json"  # per machine, not committed
+    progress = json.load(open(progress_path, encoding="utf-8")) if os.path.exists(progress_path) else {}
     name = story.get("name", os.path.splitext(os.path.basename(story_path))[0])
     image = story["settings"].get("image")
     tmp_dir = os.path.join(ROOT, "cache", "chain")
     os.makedirs(tmp_dir, exist_ok=True)
 
     if start > 1:  # resume: continue from the last frame of the previous part's video
-        prev = story.get("_videos", {}).get(str(start - 1))
+        prev = progress.get(str(start - 1))
         if not prev:
-            sys.exit(f"no saved video for part {start - 1} in {story_path}")
+            sys.exit(f"no saved video for part {start - 1} in {progress_path}")
         png = last_frame(prev, os.path.join(tmp_dir, f"{name}_part{start}_start.png"))
         image = upload_image(png, os.path.basename(png))
 
@@ -99,9 +101,9 @@ def main():
             sys.exit(1)
         video = os.path.join(OUTPUT, r["video"].get("subfolder", ""), r["video"]["filename"])
         log(f"{name} part {i} done in {r['seconds']}s -> {video}")
-        story.setdefault("_videos", {})[str(i)] = video
-        with open(story_path, "w", encoding="utf-8") as f:
-            json.dump(story, f, indent=1, ensure_ascii=False)
+        progress[str(i)] = video
+        with open(progress_path, "w", encoding="utf-8") as f:
+            json.dump(progress, f, indent=1)
         if i < len(story["parts"]):
             png = last_frame(video, os.path.join(tmp_dir, f"{name}_part{i + 1}_start.png"))
             image = upload_image(png, os.path.basename(png))

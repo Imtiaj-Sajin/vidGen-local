@@ -19,6 +19,12 @@ Double-click `Start-ComfyUI.bat`, then open:
 - **LTX Lab** (test page): http://127.0.0.1:8188/ltxlab
 - **ComfyUI** (full editor): http://127.0.0.1:8188, with official workflows under Workflows → `LTX-2.5_T2V_I2V_Two_Stage_Distilled`
 
+## Use it from your phone
+With ComfyUI running, double-click `Start-Remote.bat`. It prints a password (stored in `remote/password.txt`)
+and an `https://….trycloudflare.com` link. Open the link anywhere, log in once (remembered 30 days).
+The link changes every time the tunnel restarts. Delete `remote/password.txt` to get a new password.
+Full ComfyUI editor remotely: `<link>/?comfy`.
+
 ## Models (`ComfyUI_windows_portable/ComfyUI/models/diffusion_models`)
 | File | Size | Notes |
 |---|---|---|

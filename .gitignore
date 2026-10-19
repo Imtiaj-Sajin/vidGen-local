@@ -19,3 +19,9 @@ ltx_lab/results.json
 ltx_lab/results.json.tmp
 __pycache__/
 *.pyc
+
+# remote access: secrets, logs, downloaded tunnel binary
+remote/password.txt
+remote/secret.txt
+remote/*.log
+tools/

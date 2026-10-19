@@ -28,3 +28,6 @@ tools/
 
 # story-mode progress (local video paths)
 stories/*.progress.json
+
+# editor projects (per machine)
+ltx_lab/projects/

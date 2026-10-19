@@ -247,4 +247,7 @@ async def delete(request):
 
 _load_results()
 threading.Thread(target=_sampler_loop, daemon=True, name="ltx_lab_sampler").start()
-print("[ltx_lab] LTX Lab ready at /ltxlab")
+
+from . import editor  # noqa: E402,F401  (registers /ltxlab/editor routes)
+
+print("[ltx_lab] LTX Lab ready at /ltxlab (editor at /ltxlab/editor)")

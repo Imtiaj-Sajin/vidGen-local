@@ -66,6 +66,8 @@ header h1 { font-size: 17px; margin: 0; font-weight: 650; }
 header .sub { color: var(--text-muted); font-size: 13px; }
 header .spacer { flex: 1; }
 header a { color: var(--accent); }
+.tabsnav a { color: var(--text-secondary); text-decoration: none; padding: 4px 10px; border-radius: 6px; }
+.tabsnav a.on { background: var(--series-1-fill); color: var(--accent); font-weight: 600; }
 main { display: grid; grid-template-columns: 380px 1fr; gap: 16px; padding: 16px 20px; }
 @media (max-width: 1000px) { main { grid-template-columns: 1fr; padding: 16px; } }
 .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
@@ -154,9 +156,9 @@ video.preview { width: 160px; border-radius: 6px; background: #000; display: blo
 <body>
 <header>
   <h1>LTX Lab</h1>
-  <span class="sub">LTX-2.5 quant &amp; settings tester Â· RTX telemetry</span>
+  <nav class="tabsnav"><a href="/ltxlab" class="on">Generate</a><a href="/ltxlab/editor">Editor</a></nav>
   <span class="spacer"></span>
-  <a href="/" target="_blank">Open ComfyUI â†—</a>
+  <a href="/?comfy" target="_blank">Open ComfyUI ↗</a>
 </header>
 
 <main>
@@ -185,7 +187,7 @@ video.preview { width: 160px; border-radius: 6px; background: #000; display: blo
       </div>
       <label class="f" for="pipe">Pipeline</label>
       <select id="pipe">
-        <option value="two">Two-stage: half-res + 2Ã— latent upscale + refine (best for 1080p)</option>
+        <option value="two">Two-stage: half-res + 2× latent upscale + refine (best for 1080p)</option>
         <option value="one">Single-stage: native resolution, one pass</option>
       </select>
       <div class="hint" id="sizeinfo"></div>
@@ -224,23 +226,23 @@ video.preview { width: 160px; border-radius: 6px; background: #000; display: blo
   <!-- ============ telemetry + results ============ -->
   <div class="stack">
     <div class="tiles">
-      <div class="tile"><div class="k">VRAM used</div><div class="v" id="t-vram">â€“</div><div class="s" id="t-vram-s"></div><div class="meter" id="m-vram"><div></div></div></div>
-      <div class="tile"><div class="k">System RAM used</div><div class="v" id="t-ram">â€“</div><div class="s" id="t-ram-s"></div><div class="meter" id="m-ram"><div></div></div></div>
-      <div class="tile"><div class="k">ComfyUI process RAM</div><div class="v" id="t-rss">â€“</div><div class="s">resident set</div></div>
-      <div class="tile"><div class="k">Pagefile used</div><div class="v" id="t-swap">â€“</div><div class="s">high = RAM is full</div></div>
-      <div class="tile"><div class="k">GPU load</div><div class="v" id="t-util">â€“</div><div class="s" id="t-gpu-s"></div></div>
+      <div class="tile"><div class="k">VRAM used</div><div class="v" id="t-vram">–</div><div class="s" id="t-vram-s"></div><div class="meter" id="m-vram"><div></div></div></div>
+      <div class="tile"><div class="k">System RAM used</div><div class="v" id="t-ram">–</div><div class="s" id="t-ram-s"></div><div class="meter" id="m-ram"><div></div></div></div>
+      <div class="tile"><div class="k">ComfyUI process RAM</div><div class="v" id="t-rss">–</div><div class="s">resident set</div></div>
+      <div class="tile"><div class="k">Pagefile used</div><div class="v" id="t-swap">–</div><div class="s">high = RAM is full</div></div>
+      <div class="tile"><div class="k">GPU load</div><div class="v" id="t-util">–</div><div class="s" id="t-gpu-s"></div></div>
       <div class="tile"><div class="k">Current run</div><div class="v" id="t-run">idle</div><div class="s" id="t-run-s"></div></div>
     </div>
 
     <div class="charts">
-      <div class="card chart" id="c-vram"><h2>VRAM (GB) Â· last 10 min</h2><svg></svg><div class="tip"></div></div>
-      <div class="card chart" id="c-ram"><h2>System RAM (GB) Â· last 10 min</h2><svg></svg><div class="tip"></div></div>
+      <div class="card chart" id="c-vram"><h2>VRAM (GB) · last 10 min</h2><svg></svg><div class="tip"></div></div>
+      <div class="card chart" id="c-ram"><h2>System RAM (GB) · last 10 min</h2><svg></svg><div class="tip"></div></div>
     </div>
 
     <div class="card">
       <div class="histhead">
         <h2>History</h2>
-        <input id="q" type="text" placeholder="Search prompts, modelsâ€¦">
+        <input id="q" type="text" placeholder="Search prompts, models…">
         <select id="sf">
           <option value="">All</option><option value="ok">Finished</option><option value="active">Running / queued</option>
           <option value="error">Failed</option><option value="cancelled">Cancelled</option>
@@ -275,10 +277,10 @@ async function loadOptions() {
 }
 function describe(m) {
   m = m.toLowerCase();
-  if (m.includes("nvfp4-ddb")) return "NVFP4 community Â· 12.6 GB Â· fits fully in 16 GB";
-  if (m.includes("nvfp4")) return "NVFP4 official Â· 17.8 GB Â· native FP4 on RTX 50";
-  if (m.includes("int8")) return "INT8 official Â· 20.5 GB Â· best quality, offloads";
-  if (m.includes("bf16") && !m.endsWith(".gguf")) return "BF16 full Â· 40 GB Â· too big for 16 GB";
+  if (m.includes("nvfp4-ddb")) return "NVFP4 community · 12.6 GB · fits fully in 16 GB";
+  if (m.includes("nvfp4")) return "NVFP4 official · 17.8 GB · native FP4 on RTX 50";
+  if (m.includes("int8")) return "INT8 official · 20.5 GB · best quality, offloads";
+  if (m.includes("bf16") && !m.endsWith(".gguf")) return "BF16 full · 40 GB · too big for 16 GB";
   const q = m.match(/q\d_k(_[ms])?|q8_0/);
   return q ? `GGUF ${q[0].toUpperCase()}` : "";
 }
@@ -299,11 +301,11 @@ function combos() {
 }
 function updateCount() {
   const n = combos().length;
-  $("count").textContent = n ? `${n} run${n > 1 ? "s" : ""} will be queued (models Ã— resolutions Ã— lengths Ã— seeds).` : "Pick at least one model and resolution.";
+  $("count").textContent = n ? `${n} run${n > 1 ? "s" : ""} will be queued (models × resolutions × lengths × seeds).` : "Pick at least one model and resolution.";
   const two = $("pipe").value === "two", fps = +$("fps").value || 24;
   const d = list($("dur").value).map(Number)[0] || 10;
   const frames = 1 + Math.floor(fps * d / 8) * 8;
-  $("sizeinfo").textContent = two ? `Stage 1 renders at half size, then upscales 2Ã—. ${frames} frames for ${d}s at ${fps} fps.` : `Renders at full size in one pass (needs much more VRAM at 1080p). ${frames} frames.`;
+  $("sizeinfo").textContent = two ? `Stage 1 renders at half size, then upscales 2×. ${frames} frames for ${d}s at ${fps} fps.` : `Renders at full size in one pass (needs much more VRAM at 1080p). ${frames} frames.`;
 }
 document.addEventListener("input", updateCount);
 
@@ -328,7 +330,7 @@ function selectImage(name) {
   if (!uploaded) {
     $("drop").textContent = "Drop or click to add a start image (optional)";
   } else {
-    $("drop").innerHTML = `<img src="${inputUrl(uploaded)}">${esc(uploaded)} Â· <a href="#" id="clr">remove</a>`;
+    $("drop").innerHTML = `<img src="${inputUrl(uploaded)}">${esc(uploaded)} · <a href="#" id="clr">remove</a>`;
     $("clr").onclick = (e) => { e.preventDefault(); e.stopPropagation(); selectImage(null); };
   }
   document.querySelectorAll("#recent img").forEach(im => im.classList.toggle("sel", im.dataset.name === uploaded));
@@ -365,7 +367,7 @@ $("stop").onclick = () => fetch("/interrupt", { method: "POST" });
 $("free").onclick = () => fetch("/free", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ unload_models: true, free_memory: true }) });
 
 // ---------- telemetry ----------
-const gb = (x) => x == null ? "â€“" : x.toFixed(1);
+const gb = (x) => x == null ? "–" : x.toFixed(1);
 async function poll() {
   try {
     const d = await (await fetch("/ltxlab/api/stats?since=" + lastT)).json();
@@ -379,26 +381,26 @@ function setMeter(id, frac) { const m = $(id); m.firstElementChild.style.width =
 function render(now) {
   const s = samples[samples.length - 1];
   if (s) {
-    $("t-vram").textContent = gb(s.vram_used) + " GB"; $("t-vram-s").textContent = `of ${gb(s.vram_total)} GB Â· torch ${gb(s.torch_alloc)} GB`;
+    $("t-vram").textContent = gb(s.vram_used) + " GB"; $("t-vram-s").textContent = `of ${gb(s.vram_total)} GB · torch ${gb(s.torch_alloc)} GB`;
     setMeter("m-vram", s.vram_used / s.vram_total);
     $("t-ram").textContent = gb(s.ram_used) + " GB"; $("t-ram-s").textContent = `of ${gb(s.ram_total)} GB`;
     setMeter("m-ram", s.ram_used / s.ram_total);
     $("t-rss").textContent = gb(s.proc_rss) + " GB";
     $("t-swap").textContent = gb(s.swap_used) + " GB";
-    $("t-util").textContent = s.gpu_util == null ? "â€“" : s.gpu_util.toFixed(0) + "%";
-    $("t-gpu-s").textContent = s.gpu_temp == null ? "" : `${s.gpu_temp.toFixed(0)} Â°C Â· ${s.gpu_power.toFixed(0)} W`;
+    $("t-util").textContent = s.gpu_util == null ? "–" : s.gpu_util.toFixed(0) + "%";
+    $("t-gpu-s").textContent = s.gpu_temp == null ? "" : `${s.gpu_temp.toFixed(0)} °C · ${s.gpu_power.toFixed(0)} W`;
   }
   const cur = runs.find(r => r.status === "running");
   const queued = runs.filter(r => r.status === "queued").length;
   $("t-run").textContent = cur ? fmtTime(now - cur.started_at) : "idle";
-  $("t-run-s").textContent = cur ? `${short(cur.model)} Â· ${cur.output}` + (queued ? ` Â· ${queued} queued` : "") : (queued ? `${queued} queued` : "");
+  $("t-run-s").textContent = cur ? `${short(cur.model)} · ${cur.output}` + (queued ? ` · ${queued} queued` : "") : (queued ? `${queued} queued` : "");
   if (s) {
     chart("c-vram", "vram_used", s.vram_total, now);
     chart("c-ram", "ram_used", s.ram_total, now);
   }
   table();
 }
-const fmtTime = (sec) => sec == null ? "â€“" : (sec >= 60 ? `${Math.floor(sec / 60)}m ${String(Math.round(sec % 60)).padStart(2, "0")}s` : `${sec.toFixed(0)}s`);
+const fmtTime = (sec) => sec == null ? "–" : (sec >= 60 ? `${Math.floor(sec / 60)}m ${String(Math.round(sec % 60)).padStart(2, "0")}s` : `${sec.toFixed(0)}s`);
 const short = (m) => (m || "").replace("ltx-2.5-22b-distilled-transformer-", "").replace(/\.(safetensors|gguf)$/, "");
 
 // ---------- chart (single series, one axis, crosshair tooltip) ----------
@@ -437,7 +439,7 @@ function chart(id, key, cap, now) {
     xh.setAttribute("x1", x(best.t)); xh.setAttribute("x2", x(best.t)); xh.setAttribute("visibility", "visible");
     dot.setAttribute("cx", x(best.t)); dot.setAttribute("cy", y(best[key])); dot.setAttribute("visibility", "visible");
     const ago = Math.round(now - best.t);
-    tip.innerHTML = `<b>${best[key].toFixed(2)} GB</b> Â· ${ago ? ago + "s ago" : "now"}`;
+    tip.innerHTML = `<b>${best[key].toFixed(2)} GB</b> · ${ago ? ago + "s ago" : "now"}`;
     tip.style.display = "block";
     const left = (x(best.t) / W) * bx.width;
     tip.style.left = Math.min(bx.width - tip.offsetWidth, Math.max(0, left - tip.offsetWidth / 2)) + 16 + "px";
@@ -470,7 +472,7 @@ function table() {
   if (sig === histSig) { rows.filter(r => r.status === "running").forEach(live); return; }
   histSig = sig;
   const ok = runs.filter(r => r.status === "ok"), total = ok.reduce((a, r) => a + (r.seconds || 0), 0);
-  $("histsum").textContent = `${runs.length} runs Â· ${ok.length} finished Â· ${fmtTime(total)} total render time` + (rows.length !== runs.length ? ` Â· showing ${rows.length}` : "");
+  $("histsum").textContent = `${runs.length} runs · ${ok.length} finished · ${fmtTime(total)} total render time` + (rows.length !== runs.length ? ` · showing ${rows.length}` : "");
   $("runs").innerHTML = rows.map(r => {
     const media = r.video
       ? `<video src="${outUrl(r.video)}" controls preload="metadata" ${r.image ? `poster="${inputUrl(r.image)}"` : ""}></video>`
@@ -486,7 +488,7 @@ function table() {
         <div class="meta2">
           <span><b>${esc(short(r.model))}</b></span>
           <span>${r.output}${r.two_stage ? " (two-stage)" : ""}</span>
-          <span>${r.duration}s Â· ${r.frames} frames Â· ${r.fps} fps</span>
+          <span>${r.duration}s · ${r.frames} frames · ${r.fps} fps</span>
           <span>seed ${r.seed}</span>
         </div>
         <div class="meta2 live">${liveStats(r)}</div>

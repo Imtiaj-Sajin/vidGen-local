@@ -1,0 +1,21 @@
+# installed by setup.ps1 / download.ps1
+ComfyUI_windows_portable/
+downloads/
+cache/
+
+# models, in case any land in the repo folder
+*.safetensors
+*.gguf
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.7z
+*.part
+
+# per-machine run data
+scripts/*.log
+ltx_lab/results.json
+ltx_lab/results.json.tmp
+__pycache__/
+*.pyc

@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LTX Lab</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f2;
+  --surface-1: #fcfcfb;
+  --surface-2: #efeeea;
+  --border: #dcdbd5;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7974;
+  --series-1: #2a78d6;
+  --series-1-fill: rgba(42,120,214,.12);
+  --band: rgba(42,120,214,.06);
+  --grid: #e6e5e0;
+  --accent: #2a78d6;
+  --accent-ink: #ffffff;
+  --good: #008300;
+  --warning: #b07800;
+  --critical: #c62f2e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110;
+    --surface-1: #1a1a19;
+    --surface-2: #232321;
+    --border: #34332f;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --series-1: #3987e5;
+    --series-1-fill: rgba(57,135,229,.18);
+    --band: rgba(57,135,229,.09);
+    --grid: #2a2a27;
+    --accent: #3987e5;
+    --accent-ink: #ffffff;
+    --good: #3fb950;
+    --warning: #d9a300;
+    --critical: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface-1: #1a1a19; --surface-2: #232321; --border: #34332f;
+  --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+  --series-1: #3987e5; --series-1-fill: rgba(57,135,229,.18); --band: rgba(57,135,229,.09);
+  --grid: #2a2a27; --accent: #3987e5; --accent-ink: #ffffff;
+  --good: #3fb950; --warning: #d9a300; --critical: #e66767;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text-primary);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+header {
+  display: flex; align-items: center; gap: 16px; padding: 12px 20px;
+  border-bottom: 1px solid var(--border); background: var(--surface-1);
+}
+header h1 { font-size: 17px; margin: 0; font-weight: 650; }
+header .sub { color: var(--text-muted); font-size: 13px; }
+header .spacer { flex: 1; }
+header a { color: var(--accent); }
+main { display: grid; grid-template-columns: 380px 1fr; gap: 16px; padding: 16px 20px; }
+@media (max-width: 1000px) { main { grid-template-columns: 1fr; padding: 16px; } }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-secondary); margin: 0 0 10px; font-weight: 600; }
+.stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+label.f { display: block; font-size: 12px; color: var(--text-secondary); margin: 10px 0 4px; }
+input[type=text], input[type=number], textarea, select {
+  width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface-2); color: var(--text-primary); font: inherit;
+}
+textarea { min-height: 84px; resize: vertical; }
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; min-width: 0; }
+.checks { display: flex; flex-direction: column; gap: 4px; max-height: 170px; overflow: auto; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); }
+.checks label { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; cursor: pointer; word-break: break-all; }
+.checks .meta { color: var(--text-muted); font-size: 11px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pills label { border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 13px; cursor: pointer; background: var(--surface-2); user-select: none; }
+.pills input { display: none; }
+.pills label:has(input:checked) { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button {
+  font: inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text-primary); cursor: pointer;
+}
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: default; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.hint { color: var(--text-muted); font-size: 12px; margin-top: 6px; }
+.drop { border: 1px dashed var(--border); border-radius: 8px; padding: 10px; text-align: center; color: var(--text-muted); cursor: pointer; font-size: 13px; }
+.drop img { max-width: 100%; max-height: 140px; border-radius: 6px; display: block; margin: 0 auto 6px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.tile .k { font-size: 12px; color: var(--text-secondary); }
+.tile .v { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.meter { height: 4px; background: var(--surface-2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.meter > div { height: 100%; background: var(--series-1); border-radius: 2px; }
+.meter.hot > div { background: var(--critical); }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 1300px) { .charts { grid-template-columns: 1fr; } }
+.chart { position: relative; }
+.chart svg { width: 100%; height: 180px; display: block; }
+.chart .tip {
+  position: absolute; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; font-size: 12px; white-space: nowrap; display: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15); font-variant-numeric: tabular-nums;
+}
+.status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.st-ok { color: var(--good); } .st-error { color: var(--critical); }
+.st-running { color: var(--accent); } .st-queued, .st-cancelled { color: var(--text-muted); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--text-secondary); font-weight: 600; font-size: 12px; white-space: nowrap; cursor: pointer; }
+td.num { text-align: right; } th.num { text-align: right; }
+td .mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; }
+td .err { color: var(--critical); font-size: 12px; max-width: 360px; }
+video.preview { width: 160px; border-radius: 6px; background: #000; display: block; }
+.warnbox { border-left: 3px solid var(--warning); padding: 6px 10px; background: var(--surface-2); border-radius: 4px; font-size: 13px; margin-top: 8px; display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>LTX Lab</h1>
+  <span class="sub">LTX-2.5 quant &amp; settings tester · RTX telemetry</span>
+  <span class="spacer"></span>
+  <a href="/" target="_blank">Open ComfyUI ↗</a>
+</header>
+
+<main>
+  <!-- ============ settings ============ -->
+  <div class="stack">
+    <div class="card">
+      <h2>Models to test</h2>
+      <div class="checks" id="models"></div>
+      <div class="hint">Tick several to compare them on the same prompt and seed.</div>
+      <label class="f" for="te">Text encoder</label>
+      <select id="te"></select>
+    </div>
+
+    <div class="card">
+      <h2>Output</h2>
+      <label class="f">Resolution (tick several to compare)</label>
+      <div class="pills" id="res">
+        <label><input type="checkbox" value="1088x1920" checked>1080p 9:16</label>
+        <label><input type="checkbox" value="1920x1088">1080p 16:9</label>
+        <label><input type="checkbox" value="704x1280">720p 9:16</label>
+        <label><input type="checkbox" value="1280x704">720p 16:9</label>
+      </div>
+      <div class="row">
+        <div><label class="f" for="dur">Seconds (comma list)</label><input id="dur" type="text" value="10"></div>
+        <div><label class="f" for="fps">FPS</label><input id="fps" type="number" value="24" min="8" max="60"></div>
+      </div>
+      <label class="f" for="pipe">Pipeline</label>
+      <select id="pipe">
+        <option value="two">Two-stage: half-res + 2× latent upscale + refine (best for 1080p)</option>
+        <option value="one">Single-stage: native resolution, one pass</option>
+      </select>
+      <div class="hint" id="sizeinfo"></div>
+    </div>
+
+    <div class="card">
+      <h2>Prompt</h2>
+      <div class="drop" id="drop">Drop or click to add a start image (optional)<input type="file" id="file" accept="image/*" hidden></div>
+      <label class="f" for="prompt">Prompt</label>
+      <textarea id="prompt" placeholder="A cartoon orange cat in a tiny chef hat flips a pancake, it lands on its face, the cat screams dramatically. Camera slowly pushes in. Sound: sizzling pan, cartoon boing, loud cat scream."></textarea>
+      <label class="f" for="neg">Negative prompt</label>
+      <input id="neg" type="text" value="blurry, low quality, distorted, watermark, text, subtitles">
+      <div class="row">
+        <div><label class="f" for="seed">Seeds (comma list)</label><input id="seed" type="text" value="42"></div>
+        <div><label class="f" for="strength">Image strength</label><input id="strength" type="number" step="0.05" min="0" max="1" value="0.7"></div>
+      </div>
+      <details>
+        <summary class="hint" style="cursor:pointer">Decode tiling (lower = less VRAM)</summary>
+        <div class="row">
+          <div><label class="f" for="tile">Tile size</label><input id="tile" type="number" value="512" step="64"></div>
+          <div><label class="f" for="ttile">Temporal size</label><input id="ttile" type="number" value="128" step="8"></div>
+        </div>
+      </details>
+      <div class="btns">
+        <button class="primary" id="go">Queue runs</button>
+        <button id="stop" title="Interrupt the current run">Stop</button>
+        <button id="free" title="Unload models from VRAM/RAM">Free memory</button>
+      </div>
+      <div class="hint" id="count"></div>
+      <div class="warnbox" id="msg"></div>
+    </div>
+  </div>
+
+  <!-- ============ telemetry + results ============ -->
+  <div class="stack">
+    <div class="tiles">
+      <div class="tile"><div class="k">VRAM used</div><div class="v" id="t-vram">–</div><div class="s" id="t-vram-s"></div><div class="meter" id="m-vram"><div></div></div></div>
+      <div class="tile"><div class="k">System RAM used</div><div class="v" id="t-ram">–</div><div class="s" id="t-ram-s"></div><div class="meter" id="m-ram"><div></div></div></div>
+      <div class="tile"><div class="k">ComfyUI process RAM</div><div class="v" id="t-rss">–</div><div class="s">resident set</div></div>
+      <div class="tile"><div class="k">Pagefile used</div><div class="v" id="t-swap">–</div><div class="s">high = RAM is full</div></div>
+      <div class="tile"><div class="k">GPU load</div><div class="v" id="t-util">–</div><div class="s" id="t-gpu-s"></div></div>
+      <div class="tile"><div class="k">Current run</div><div class="v" id="t-run">idle</div><div class="s" id="t-run-s"></div></div>
+    </div>
+
+    <div class="charts">
+      <div class="card chart" id="c-vram"><h2>VRAM (GB) · last 10 min</h2><svg></svg><div class="tip"></div></div>
+      <div class="card chart" id="c-ram"><h2>System RAM (GB) · last 10 min</h2><svg></svg><div class="tip"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Runs</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th>Status</th><th>Model</th><th>Output</th><th class="num">Sec / frames</th><th class="num">Seed</th>
+            <th class="num">Time</th><th class="num">Peak VRAM</th><th class="num">Torch peak</th><th class="num">Peak RAM</th><th class="num">Pagefile</th><th>Video</th><th></th>
+          </tr></thead>
+          <tbody id="runs"></tbody>
+        </table>
+      </div>
+      <div class="hint">Peak VRAM = whole card (ComfyUI fills free VRAM on purpose, so ~15 GB is normal). Torch peak = what the model actually needed. A big pagefile number or very long time means the model is spilling out of RAM. Make it smaller (quant/resolution/length).</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let samples = [], runs = [], lastT = 0, uploaded = null;
+
+// ---------- options ----------
+async function loadOptions() {
+  const o = await (await fetch("/ltxlab/api/options")).json();
+  const mbox = $("models");
+  mbox.innerHTML = o.models.length ? "" : '<span class="meta">No LTX models in models/diffusion_models yet. Still downloading?</span>';
+  for (const m of o.models) {
+    const id = "m_" + m;
+    const lab = document.createElement("label");
+    lab.innerHTML = `<input type="checkbox" value="${m}"> <span>${m}<br><span class="meta">${describe(m)}</span></span>`;
+    if (m === o.defaults.model) lab.querySelector("input").checked = true;
+    mbox.appendChild(lab);
+  }
+  if (!mbox.querySelector("input:checked") && mbox.querySelector("input")) mbox.querySelector("input").checked = true;
+  $("te").innerHTML = o.text_encoders.map(t => `<option ${t === o.defaults.text_encoder ? "selected" : ""}>${t}</option>`).join("");
+  updateCount();
+}
+function describe(m) {
+  m = m.toLowerCase();
+  if (m.includes("nvfp4-ddb")) return "NVFP4 community · 12.6 GB · fits fully in 16 GB";
+  if (m.includes("nvfp4")) return "NVFP4 official · 17.8 GB · native FP4 on RTX 50";
+  if (m.includes("int8")) return "INT8 official · 20.5 GB · best quality, offloads";
+  if (m.includes("bf16") && !m.endsWith(".gguf")) return "BF16 full · 40 GB · too big for 16 GB";
+  const q = m.match(/q\d_k(_[ms])?|q8_0/);
+  return q ? `GGUF ${q[0].toUpperCase()}` : "";
+}
+
+// ---------- combinations ----------
+const list = (s) => s.split(",").map(x => x.trim()).filter(Boolean);
+function combos() {
+  const models = [...document.querySelectorAll("#models input:checked")].map(i => i.value);
+  const res = [...document.querySelectorAll("#res input:checked")].map(i => i.value);
+  const durs = list($("dur").value).map(Number).filter(x => x > 0);
+  const seeds = list($("seed").value).map(Number).filter(x => Number.isFinite(x));
+  const out = [];
+  for (const model of models) for (const r of res) for (const d of durs) for (const seed of seeds) {
+    const [w, h] = r.split("x").map(Number);
+    out.push({ model, width: w, height: h, duration: d, seed });
+  }
+  return out;
+}
+function updateCount() {
+  const n = combos().length;
+  $("count").textContent = n ? `${n} run${n > 1 ? "s" : ""} will be queued (models × resolutions × lengths × seeds).` : "Pick at least one model and resolution.";
+  const two = $("pipe").value === "two", fps = +$("fps").value || 24;
+  const d = list($("dur").value).map(Number)[0] || 10;
+  const frames = 1 + Math.floor(fps * d / 8) * 8;
+  $("sizeinfo").textContent = two ? `Stage 1 renders at half size, then upscales 2×. ${frames} frames for ${d}s at ${fps} fps.` : `Renders at full size in one pass (needs much more VRAM at 1080p). ${frames} frames.`;
+}
+document.addEventListener("input", updateCount);
+
+// ---------- image upload ----------
+$("drop").onclick = () => $("file").click();
+$("drop").ondragover = (e) => e.preventDefault();
+$("drop").ondrop = (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) upload(e.dataTransfer.files[0]); };
+$("file").onchange = () => $("file").files[0] && upload($("file").files[0]);
+async function upload(file) {
+  const fd = new FormData(); fd.append("image", file); fd.append("overwrite", "true");
+  const r = await (await fetch("/upload/image", { method: "POST", body: fd })).json();
+  uploaded = r.subfolder ? `${r.subfolder}/${r.name}` : r.name;
+  $("drop").innerHTML = `<img src="${URL.createObjectURL(file)}">${uploaded} · <a href="#" id="clr">remove</a>`;
+  $("clr").onclick = (e) => { e.preventDefault(); e.stopPropagation(); uploaded = null; $("drop").innerHTML = "Drop or click to add a start image (optional)"; };
+}
+
+// ---------- actions ----------
+function msg(t) { $("msg").style.display = t ? "block" : "none"; $("msg").textContent = t || ""; }
+$("go").onclick = async () => {
+  msg("");
+  const cs = combos();
+  if (!cs.length) return msg("Pick at least one model and resolution.");
+  if (!$("prompt").value.trim()) return msg("Write a prompt first.");
+  $("go").disabled = true;
+  for (const c of cs) {
+    const body = {
+      ...c, text_encoder: $("te").value, two_stage: $("pipe").value === "two",
+      fps: +$("fps").value, prompt: $("prompt").value, negative: $("neg").value,
+      image: uploaded, image_strength: +$("strength").value,
+      tile_size: +$("tile").value, temporal_size: +$("ttile").value,
+    };
+    const r = await fetch("/ltxlab/api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) { msg("ComfyUI rejected the run: " + JSON.stringify((await r.json()).error).slice(0, 600)); break; }
+  }
+  $("go").disabled = false;
+  poll();
+};
+$("stop").onclick = () => fetch("/interrupt", { method: "POST" });
+$("free").onclick = () => fetch("/free", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ unload_models: true, free_memory: true }) });
+
+// ---------- telemetry ----------
+const gb = (x) => x == null ? "–" : x.toFixed(1);
+async function poll() {
+  try {
+    const d = await (await fetch("/ltxlab/api/stats?since=" + lastT)).json();
+    if (d.samples.length) { samples.push(...d.samples); lastT = d.samples[d.samples.length - 1].t; }
+    const cutoff = d.now - 600; samples = samples.filter(s => s.t >= cutoff);
+    runs = d.runs;
+    render(d.now);
+  } catch (e) { $("t-run").textContent = "offline"; }
+}
+function setMeter(id, frac) { const m = $(id); m.firstElementChild.style.width = Math.min(100, frac * 100) + "%"; m.classList.toggle("hot", frac > .95); }
+function render(now) {
+  const s = samples[samples.length - 1];
+  if (s) {
+    $("t-vram").textContent = gb(s.vram_used) + " GB"; $("t-vram-s").textContent = `of ${gb(s.vram_total)} GB · torch ${gb(s.torch_alloc)} GB`;
+    setMeter("m-vram", s.vram_used / s.vram_total);
+    $("t-ram").textContent = gb(s.ram_used) + " GB"; $("t-ram-s").textContent = `of ${gb(s.ram_total)} GB`;
+    setMeter("m-ram", s.ram_used / s.ram_total);
+    $("t-rss").textContent = gb(s.proc_rss) + " GB";
+    $("t-swap").textContent = gb(s.swap_used) + " GB";
+    $("t-util").textContent = s.gpu_util == null ? "–" : s.gpu_util.toFixed(0) + "%";
+    $("t-gpu-s").textContent = s.gpu_temp == null ? "" : `${s.gpu_temp.toFixed(0)} °C · ${s.gpu_power.toFixed(0)} W`;
+  }
+  const cur = runs.find(r => r.status === "running");
+  const queued = runs.filter(r => r.status === "queued").length;
+  $("t-run").textContent = cur ? fmtTime(now - cur.started_at) : "idle";
+  $("t-run-s").textContent = cur ? `${short(cur.model)} · ${cur.output}` + (queued ? ` · ${queued} queued` : "") : (queued ? `${queued} queued` : "");
+  if (s) {
+    chart("c-vram", "vram_used", s.vram_total, now);
+    chart("c-ram", "ram_used", s.ram_total, now);
+  }
+  table();
+}
+const fmtTime = (sec) => sec == null ? "–" : (sec >= 60 ? `${Math.floor(sec / 60)}m ${String(Math.round(sec % 60)).padStart(2, "0")}s` : `${sec.toFixed(0)}s`);
+const short = (m) => (m || "").replace("ltx-2.5-22b-distilled-transformer-", "").replace(/\.(safetensors|gguf)$/, "");
+
+// ---------- chart (single series, one axis, crosshair tooltip) ----------
+function chart(id, key, cap, now) {
+  const box = $(id), svg = box.querySelector("svg"), tip = box.querySelector(".tip");
+  const W = svg.clientWidth || 600, H = 180, L = 36, R = 8, T = 8, B = 22;
+  const t0 = now - 600, x = (t) => L + (t - t0) / 600 * (W - L - R), y = (v) => T + (1 - v / cap) * (H - T - B);
+  const css = getComputedStyle(document.documentElement);
+  let h = "";
+  const step = cap > 32 ? 8 : 4;
+  for (let v = 0; v <= cap; v += step) h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--text-muted)">${v}</text>`;
+  h += `<line x1="${L}" x2="${W - R}" y1="${y(cap)}" y2="${y(cap)}" stroke="var(--text-muted)" stroke-dasharray="4 3"/><text x="${W - R}" y="${y(cap) + 12}" text-anchor="end" font-size="11" fill="var(--text-muted)">capacity ${cap.toFixed(1)}</text>`;
+  for (const m of [10, 5, 0]) h += `<text x="${x(now - m * 60)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--text-muted)">${m ? "-" + m + "m" : "now"}</text>`;
+  for (const r of runs) {
+    if (!r.started_at) continue;
+    const a = Math.max(r.started_at, t0), b = r.finished_at || now;
+    if (b < t0) continue;
+    h += `<rect x="${x(a)}" y="${T}" width="${Math.max(1, x(b) - x(a))}" height="${H - T - B}" fill="var(--band)"/>`;
+  }
+  const pts = samples.filter(s => s.t >= t0);
+  if (pts.length > 1) {
+    const line = pts.map(s => `${x(s.t).toFixed(1)},${y(s[key]).toFixed(1)}`).join(" ");
+    h += `<polygon points="${x(pts[0].t)},${y(0)} ${line} ${x(pts[pts.length - 1].t)},${y(0)}" fill="var(--series-1-fill)"/>`;
+    h += `<polyline points="${line}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round"/>`;
+  }
+  h += `<line class="xh" y1="${T}" y2="${H - B}" stroke="var(--text-muted)" visibility="hidden"/><circle class="dot" r="4" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2" visibility="hidden"/>`;
+  h += `<rect x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent" class="hit"/>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = h;
+  const hit = svg.querySelector(".hit"), xh = svg.querySelector(".xh"), dot = svg.querySelector(".dot");
+  hit.onmousemove = (e) => {
+    const bx = svg.getBoundingClientRect(), px = (e.clientX - bx.left) * (W / bx.width);
+    const t = t0 + (px - L) / (W - L - R) * 600;
+    let best = null; for (const s of pts) if (!best || Math.abs(s.t - t) < Math.abs(best.t - t)) best = s;
+    if (!best) return;
+    xh.setAttribute("x1", x(best.t)); xh.setAttribute("x2", x(best.t)); xh.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", x(best.t)); dot.setAttribute("cy", y(best[key])); dot.setAttribute("visibility", "visible");
+    const ago = Math.round(now - best.t);
+    tip.innerHTML = `<b>${best[key].toFixed(2)} GB</b> · ${ago ? ago + "s ago" : "now"}`;
+    tip.style.display = "block";
+    const left = (x(best.t) / W) * bx.width;
+    tip.style.left = Math.min(bx.width - tip.offsetWidth, Math.max(0, left - tip.offsetWidth / 2)) + 16 + "px";
+    tip.style.top = "40px";
+  };
+  hit.onmouseleave = () => { tip.style.display = "none"; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
+}
+
+// ---------- runs table ----------
+let tableSig = "";
+function table() {
+  const rows = [...runs].reverse();
+  const sig = JSON.stringify(rows.map(r => [r.prompt_id, r.status, r.seconds, r.video && r.video.filename]));
+  if (sig === tableSig) {
+    // only live cells of the running row change; keep video players untouched
+    for (const r of rows.filter(r => r.status === "running")) {
+      const tr = document.querySelector(`tr[data-id="${r.prompt_id}"]`);
+      if (!tr) continue;
+      tr.querySelector(".c-time").textContent = fmtTime(Date.now() / 1000 - r.started_at);
+      tr.querySelector(".c-vram").textContent = gb(r.peak_vram);
+      tr.querySelector(".c-torch").textContent = gb(r.peak_torch);
+      tr.querySelector(".c-ram").textContent = gb(r.peak_ram);
+      tr.querySelector(".c-swap").textContent = gb(r.peak_swap);
+    }
+    return;
+  }
+  tableSig = sig;
+  $("runs").innerHTML = rows.map(r => {
+    const v = r.video ? `/view?filename=${encodeURIComponent(r.video.filename)}&subfolder=${encodeURIComponent(r.video.subfolder || "")}&type=${r.video.type || "output"}` : null;
+    const time = r.status === "running" ? fmtTime(Date.now() / 1000 - r.started_at) : fmtTime(r.seconds);
+    return `<tr data-id="${r.prompt_id}">
+      <td><span class="status st-${r.status}">${r.status}</span>${r.error ? `<div class="err">${esc(r.error)}</div>` : ""}</td>
+      <td><span class="mono">${esc(short(r.model))}</span><div class="hint">${r.two_stage ? "two-stage" : "single"}${r.image ? " · I2V" : " · T2V"}</div></td>
+      <td>${r.output}<div class="hint">stage 1 ${r.stage1}</div></td>
+      <td class="num">${r.duration}s / ${r.frames}</td>
+      <td class="num">${r.seed}</td>
+      <td class="num c-time">${time}</td>
+      <td class="num c-vram">${gb(r.peak_vram)}</td>
+      <td class="num c-torch">${gb(r.peak_torch)}</td>
+      <td class="num c-ram">${gb(r.peak_ram)}</td>
+      <td class="num c-swap">${gb(r.peak_swap)}</td>
+      <td>${v ? `<video class="preview" src="${v}" controls preload="metadata"></video><a href="${v}" target="_blank">open</a>` : ""}</td>
+      <td>${r.status === "running" || r.status === "queued" ? "" : `<button data-del="${r.prompt_id}" title="Remove from list">✕</button>`}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="12" class="hint">No runs yet.</td></tr>`;
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    await fetch("/ltxlab/api/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [b.dataset.del] }) });
+    poll();
+  });
+}
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+loadOptions();
+poll();
+setInterval(poll, 1000);
+</script>
+</body>
+</html>

@@ -196,13 +196,18 @@ def build_command(project, work):
             with open(os.path.join(work, f"cap{k}.txt"), "w", encoding="utf-8") as f:
                 f.write(str(c["text"]))
             size = int(_num(c.get("size"), 12, 200, 64))
+            # shrink to fit 90% of the frame width (the browser preview wraps, ffmpeg doesn't)
+            from PIL import ImageFont
+            widest = max(ImageFont.truetype(FONT, size).getlength(line) for line in str(c["text"]).split("\n"))
+            if widest > W * 0.9:
+                size = max(12, int(size * W * 0.9 / widest))
             a = _num(c.get("start"), 0, total, 0)
             b = _num(c.get("end"), a + 0.1, total, min(total, a + 2))
             y = {"top": "h*0.10", "center": "(h-text_h)/2"}.get(c.get("pos"), "h*0.80-text_h")
             color = re.sub(r"[^#0-9a-zA-Z]", "", str(c.get("color") or "white")) or "white"
             parts.append(
                 f"drawtext=fontfile=font.ttf:textfile=cap{k}.txt:fontsize={size}:fontcolor={color}:"
-                f"borderw={max(2, size // 12)}:bordercolor=black:line_spacing=0:"
+                f"borderw={max(2, size // 12)}:bordercolor=black:line_spacing=0:text_align=C:"
                 f"x=(w-text_w)/2:y={y}:enable='between(t,{a:.3f},{b:.3f})'")
         filters.append(f"[{vcur}]" + ",".join(parts) + "[vt]")
         vcur = "vt"

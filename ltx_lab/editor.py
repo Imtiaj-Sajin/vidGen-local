@@ -153,9 +153,14 @@ def build_command(project, work):
             args += ["-f", "lavfi", "-t", f"{seg:.3f}", "-i", "anullsrc=r=48000:cl=stereo"]
             ai = f"{n_in}:a"
             n_in += 1
-        filters.append(
-            f"[{vi}:v]setpts=(PTS-STARTPTS)/{speed},scale={W}:{H}:force_original_aspect_ratio=decrease,"
-            f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps={fps},format=yuv420p[v{i}]")
+        # near-identical shape (e.g. 704x1280 into 720x1280): fill and crop a few pixels instead of
+        # adding thin black bars; clearly different shapes are letterboxed like CapCut's "fit"
+        src_ar = meta["width"] / max(1, meta["height"])
+        if abs(src_ar / (W / H) - 1) < 0.04:
+            fit = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
+        else:
+            fit = f"scale={W}:{H}:force_original_aspect_ratio=decrease,pad={W}:{H}:(ow-iw)/2:(oh-ih)/2:color=black"
+        filters.append(f"[{vi}:v]setpts=(PTS-STARTPTS)/{speed},{fit},setsar=1,fps={fps},format=yuv420p[v{i}]")
         tempo = ""
         s = speed
         while s > 2.0:          # atempo accepts 0.5..2 per stage

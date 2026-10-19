@@ -38,16 +38,19 @@ def _load_results():
     try:
         with open(RESULTS_FILE, "r", encoding="utf-8") as f:
             for r in json.load(f):
+                if r["status"] in ("queued", "running"):
+                    r["status"] = "cancelled"   # ComfyUI restarted before it ran
+                    r["error"] = "ComfyUI was restarted before this run finished."
                 _runs[r["prompt_id"]] = r
     except (OSError, ValueError):
         pass
 
 
 def _save_results():
-    done = [r for r in _runs.values() if r["status"] not in ("queued", "running")]
+    # every run is kept (history), including queued ones
     tmp = RESULTS_FILE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(sorted(done, key=lambda r: r["queued_at"]), f, indent=1)
+        json.dump(sorted(_runs.values(), key=lambda r: r["queued_at"]), f, indent=1)
     os.replace(tmp, RESULTS_FILE)
 
 
@@ -123,6 +126,7 @@ def _sampler_loop():
                         run["status"] = "running"
                         run["started_at"] = s["t"]
                         torch.cuda.reset_peak_memory_stats()
+                        changed = True
                     if run["status"] == "running":
                         run["peak_vram"] = max(run.get("peak_vram", 0), s["vram_used"])
                         run["peak_ram"] = max(run.get("peak_ram", 0), s["ram_used"])
@@ -204,11 +208,31 @@ async def run(request):
         "model": body.get("model"), "text_encoder": body.get("text_encoder"),
         "two_stage": body.get("two_stage", True), "duration": body.get("duration"),
         "fps": body.get("fps"), "seed": body.get("seed"), "image": body.get("image"),
-        "prompt": (body.get("prompt") or "")[:300], **info,
+        "prompt": body.get("prompt") or "", "negative": body.get("negative") or "",
+        "settings": body,   # everything the page sent, so the run can be reused exactly
+        **info,
     }
     with _lock:
         _runs[pid] = rec
+        _save_results()
     return web.json_response(rec)
+
+
+IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
+
+
+@routes.get("/ltxlab/api/uploads")
+async def uploads(request):
+    root = folder_paths.get_input_directory()
+    files = []
+    for dirpath, _, names in os.walk(root):
+        for n in names:
+            if n.lower().endswith(IMAGE_EXTS) and n != "example.png":
+                full = os.path.join(dirpath, n)
+                rel = os.path.relpath(full, root).replace("\\", "/")
+                files.append({"name": rel, "mtime": os.path.getmtime(full)})
+    files.sort(key=lambda f: f["mtime"], reverse=True)
+    return web.json_response(files[:200])
 
 
 @routes.post("/ltxlab/api/delete")

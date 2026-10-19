@@ -123,17 +123,40 @@ th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid
 th { color: var(--text-secondary); font-weight: 600; font-size: 12px; white-space: nowrap; cursor: pointer; }
 td.num { text-align: right; } th.num { text-align: right; }
 td .mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; }
-td .err { color: var(--critical); font-size: 12px; max-width: 360px; }
+.err { color: var(--critical); font-size: 12px; max-width: 360px; }
 video.preview { width: 160px; border-radius: 6px; background: #000; display: block; }
+.recent { display: flex; gap: 6px; overflow-x: auto; margin-top: 8px; padding-bottom: 2px; }
+.recent img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 2px solid transparent; cursor: pointer; flex: none; }
+.recent img.sel { border-color: var(--accent); }
+.histhead { display: flex; gap: 10px; align-items: center; margin-bottom: 4px; }
+.histhead h2 { margin: 0; flex: none; }
+.histhead input { flex: 1; } .histhead select { width: auto; }
+.run { display: grid; grid-template-columns: 200px 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--grid); }
+.run:last-child { border-bottom: 0; }
+@media (max-width: 700px) { .run { grid-template-columns: 1fr; } }
+.run .media video, .run .media img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; background: #000; display: block; }
+.run .media .noout { aspect-ratio: 9/16; max-height: 300px; border-radius: 8px; background: var(--surface-2); display: grid; place-items: center; color: var(--text-muted); font-size: 12px; }
+.run .top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.run .when { color: var(--text-muted); font-size: 12px; }
+.run .ptext { margin: 6px 0; white-space: pre-wrap; word-break: break-word; max-height: 4.4em; overflow: hidden; cursor: pointer; }
+.run .ptext.open { max-height: none; }
+.run .negt { color: var(--text-muted); font-size: 12px; }
+.run .meta2 { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; margin-top: 6px; }
+.run .meta2 b { color: var(--text-primary); font-weight: 600; }
+.run .src { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.run .src img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+.run .acts { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.run .acts button, .run .acts a { padding: 4px 10px; font-size: 12px; }
+.run .acts a { border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); text-decoration: none; background: var(--surface-2); }
 .warnbox { border-left: 3px solid var(--warning); padding: 6px 10px; background: var(--surface-2); border-radius: 4px; font-size: 13px; margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
 <header>
   <h1>LTX Lab</h1>
-  <span class="sub">LTX-2.5 quant &amp; settings tester · RTX telemetry</span>
+  <span class="sub">LTX-2.5 quant &amp; settings tester Â· RTX telemetry</span>
   <span class="spacer"></span>
-  <a href="/" target="_blank">Open ComfyUI ↗</a>
+  <a href="/" target="_blank">Open ComfyUI â†—</a>
 </header>
 
 <main>
@@ -162,7 +185,7 @@ video.preview { width: 160px; border-radius: 6px; background: #000; display: blo
       </div>
       <label class="f" for="pipe">Pipeline</label>
       <select id="pipe">
-        <option value="two">Two-stage: half-res + 2× latent upscale + refine (best for 1080p)</option>
+        <option value="two">Two-stage: half-res + 2Ã— latent upscale + refine (best for 1080p)</option>
         <option value="one">Single-stage: native resolution, one pass</option>
       </select>
       <div class="hint" id="sizeinfo"></div>
@@ -170,7 +193,9 @@ video.preview { width: 160px; border-radius: 6px; background: #000; display: blo
 
     <div class="card">
       <h2>Prompt</h2>
-      <div class="drop" id="drop">Drop or click to add a start image (optional)<input type="file" id="file" accept="image/*" hidden></div>
+      <div class="drop" id="drop">Drop or click to add a start image (optional)</div>
+      <input type="file" id="file" accept="image/*" hidden>
+      <div class="recent" id="recent"></div>
       <label class="f" for="prompt">Prompt</label>
       <textarea id="prompt" placeholder="A cartoon orange cat in a tiny chef hat flips a pancake, it lands on its face, the cat screams dramatically. Camera slowly pushes in. Sound: sizzling pan, cartoon boing, loud cat scream."></textarea>
       <label class="f" for="neg">Negative prompt</label>
@@ -199,30 +224,30 @@ video.preview { width: 160px; border-radius: 6px; background: #000; display: blo
   <!-- ============ telemetry + results ============ -->
   <div class="stack">
     <div class="tiles">
-      <div class="tile"><div class="k">VRAM used</div><div class="v" id="t-vram">–</div><div class="s" id="t-vram-s"></div><div class="meter" id="m-vram"><div></div></div></div>
-      <div class="tile"><div class="k">System RAM used</div><div class="v" id="t-ram">–</div><div class="s" id="t-ram-s"></div><div class="meter" id="m-ram"><div></div></div></div>
-      <div class="tile"><div class="k">ComfyUI process RAM</div><div class="v" id="t-rss">–</div><div class="s">resident set</div></div>
-      <div class="tile"><div class="k">Pagefile used</div><div class="v" id="t-swap">–</div><div class="s">high = RAM is full</div></div>
-      <div class="tile"><div class="k">GPU load</div><div class="v" id="t-util">–</div><div class="s" id="t-gpu-s"></div></div>
+      <div class="tile"><div class="k">VRAM used</div><div class="v" id="t-vram">â€“</div><div class="s" id="t-vram-s"></div><div class="meter" id="m-vram"><div></div></div></div>
+      <div class="tile"><div class="k">System RAM used</div><div class="v" id="t-ram">â€“</div><div class="s" id="t-ram-s"></div><div class="meter" id="m-ram"><div></div></div></div>
+      <div class="tile"><div class="k">ComfyUI process RAM</div><div class="v" id="t-rss">â€“</div><div class="s">resident set</div></div>
+      <div class="tile"><div class="k">Pagefile used</div><div class="v" id="t-swap">â€“</div><div class="s">high = RAM is full</div></div>
+      <div class="tile"><div class="k">GPU load</div><div class="v" id="t-util">â€“</div><div class="s" id="t-gpu-s"></div></div>
       <div class="tile"><div class="k">Current run</div><div class="v" id="t-run">idle</div><div class="s" id="t-run-s"></div></div>
     </div>
 
     <div class="charts">
-      <div class="card chart" id="c-vram"><h2>VRAM (GB) · last 10 min</h2><svg></svg><div class="tip"></div></div>
-      <div class="card chart" id="c-ram"><h2>System RAM (GB) · last 10 min</h2><svg></svg><div class="tip"></div></div>
+      <div class="card chart" id="c-vram"><h2>VRAM (GB) Â· last 10 min</h2><svg></svg><div class="tip"></div></div>
+      <div class="card chart" id="c-ram"><h2>System RAM (GB) Â· last 10 min</h2><svg></svg><div class="tip"></div></div>
     </div>
 
     <div class="card">
-      <h2>Runs</h2>
-      <div class="tablewrap">
-        <table>
-          <thead><tr>
-            <th>Status</th><th>Model</th><th>Output</th><th class="num">Sec / frames</th><th class="num">Seed</th>
-            <th class="num">Time</th><th class="num">Peak VRAM</th><th class="num">Torch peak</th><th class="num">Peak RAM</th><th class="num">Pagefile</th><th>Video</th><th></th>
-          </tr></thead>
-          <tbody id="runs"></tbody>
-        </table>
+      <div class="histhead">
+        <h2>History</h2>
+        <input id="q" type="text" placeholder="Search prompts, modelsâ€¦">
+        <select id="sf">
+          <option value="">All</option><option value="ok">Finished</option><option value="active">Running / queued</option>
+          <option value="error">Failed</option><option value="cancelled">Cancelled</option>
+        </select>
       </div>
+      <div class="hint" id="histsum"></div>
+      <div id="runs"></div>
       <div class="hint">Peak VRAM = whole card (ComfyUI fills free VRAM on purpose, so ~15 GB is normal). Torch peak = what the model actually needed. A big pagefile number or very long time means the model is spilling out of RAM. Make it smaller (quant/resolution/length).</div>
     </div>
   </div>
@@ -250,10 +275,10 @@ async function loadOptions() {
 }
 function describe(m) {
   m = m.toLowerCase();
-  if (m.includes("nvfp4-ddb")) return "NVFP4 community · 12.6 GB · fits fully in 16 GB";
-  if (m.includes("nvfp4")) return "NVFP4 official · 17.8 GB · native FP4 on RTX 50";
-  if (m.includes("int8")) return "INT8 official · 20.5 GB · best quality, offloads";
-  if (m.includes("bf16") && !m.endsWith(".gguf")) return "BF16 full · 40 GB · too big for 16 GB";
+  if (m.includes("nvfp4-ddb")) return "NVFP4 community Â· 12.6 GB Â· fits fully in 16 GB";
+  if (m.includes("nvfp4")) return "NVFP4 official Â· 17.8 GB Â· native FP4 on RTX 50";
+  if (m.includes("int8")) return "INT8 official Â· 20.5 GB Â· best quality, offloads";
+  if (m.includes("bf16") && !m.endsWith(".gguf")) return "BF16 full Â· 40 GB Â· too big for 16 GB";
   const q = m.match(/q\d_k(_[ms])?|q8_0/);
   return q ? `GGUF ${q[0].toUpperCase()}` : "";
 }
@@ -274,11 +299,11 @@ function combos() {
 }
 function updateCount() {
   const n = combos().length;
-  $("count").textContent = n ? `${n} run${n > 1 ? "s" : ""} will be queued (models × resolutions × lengths × seeds).` : "Pick at least one model and resolution.";
+  $("count").textContent = n ? `${n} run${n > 1 ? "s" : ""} will be queued (models Ã— resolutions Ã— lengths Ã— seeds).` : "Pick at least one model and resolution.";
   const two = $("pipe").value === "two", fps = +$("fps").value || 24;
   const d = list($("dur").value).map(Number)[0] || 10;
   const frames = 1 + Math.floor(fps * d / 8) * 8;
-  $("sizeinfo").textContent = two ? `Stage 1 renders at half size, then upscales 2×. ${frames} frames for ${d}s at ${fps} fps.` : `Renders at full size in one pass (needs much more VRAM at 1080p). ${frames} frames.`;
+  $("sizeinfo").textContent = two ? `Stage 1 renders at half size, then upscales 2Ã—. ${frames} frames for ${d}s at ${fps} fps.` : `Renders at full size in one pass (needs much more VRAM at 1080p). ${frames} frames.`;
 }
 document.addEventListener("input", updateCount);
 
@@ -287,12 +312,32 @@ $("drop").onclick = () => $("file").click();
 $("drop").ondragover = (e) => e.preventDefault();
 $("drop").ondrop = (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) upload(e.dataTransfer.files[0]); };
 $("file").onchange = () => $("file").files[0] && upload($("file").files[0]);
+const inputUrl = (name) => {
+  const i = name.lastIndexOf("/");
+  return `/view?type=input&filename=${encodeURIComponent(name.slice(i + 1))}&subfolder=${encodeURIComponent(i < 0 ? "" : name.slice(0, i))}`;
+};
 async function upload(file) {
-  const fd = new FormData(); fd.append("image", file); fd.append("overwrite", "true");
+  // never overwrite: older runs keep pointing at their own image
+  const fd = new FormData(); fd.append("image", file); fd.append("overwrite", "false");
   const r = await (await fetch("/upload/image", { method: "POST", body: fd })).json();
-  uploaded = r.subfolder ? `${r.subfolder}/${r.name}` : r.name;
-  $("drop").innerHTML = `<img src="${URL.createObjectURL(file)}">${uploaded} · <a href="#" id="clr">remove</a>`;
-  $("clr").onclick = (e) => { e.preventDefault(); e.stopPropagation(); uploaded = null; $("drop").innerHTML = "Drop or click to add a start image (optional)"; };
+  selectImage(r.subfolder ? `${r.subfolder}/${r.name}` : r.name);
+  loadUploads();
+}
+function selectImage(name) {
+  uploaded = name || null;
+  if (!uploaded) {
+    $("drop").textContent = "Drop or click to add a start image (optional)";
+  } else {
+    $("drop").innerHTML = `<img src="${inputUrl(uploaded)}">${esc(uploaded)} Â· <a href="#" id="clr">remove</a>`;
+    $("clr").onclick = (e) => { e.preventDefault(); e.stopPropagation(); selectImage(null); };
+  }
+  document.querySelectorAll("#recent img").forEach(im => im.classList.toggle("sel", im.dataset.name === uploaded));
+}
+async function loadUploads() {
+  const files = await (await fetch("/ltxlab/api/uploads")).json();
+  $("recent").innerHTML = files.map(f => `<img loading="lazy" src="${inputUrl(f.name)}" data-name="${esc(f.name)}" title="${esc(f.name)}">`).join("");
+  $("recent").querySelectorAll("img").forEach(im => im.onclick = () => selectImage(im.dataset.name === uploaded ? null : im.dataset.name));
+  selectImage(uploaded);
 }
 
 // ---------- actions ----------
@@ -320,7 +365,7 @@ $("stop").onclick = () => fetch("/interrupt", { method: "POST" });
 $("free").onclick = () => fetch("/free", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ unload_models: true, free_memory: true }) });
 
 // ---------- telemetry ----------
-const gb = (x) => x == null ? "–" : x.toFixed(1);
+const gb = (x) => x == null ? "â€“" : x.toFixed(1);
 async function poll() {
   try {
     const d = await (await fetch("/ltxlab/api/stats?since=" + lastT)).json();
@@ -334,26 +379,26 @@ function setMeter(id, frac) { const m = $(id); m.firstElementChild.style.width =
 function render(now) {
   const s = samples[samples.length - 1];
   if (s) {
-    $("t-vram").textContent = gb(s.vram_used) + " GB"; $("t-vram-s").textContent = `of ${gb(s.vram_total)} GB · torch ${gb(s.torch_alloc)} GB`;
+    $("t-vram").textContent = gb(s.vram_used) + " GB"; $("t-vram-s").textContent = `of ${gb(s.vram_total)} GB Â· torch ${gb(s.torch_alloc)} GB`;
     setMeter("m-vram", s.vram_used / s.vram_total);
     $("t-ram").textContent = gb(s.ram_used) + " GB"; $("t-ram-s").textContent = `of ${gb(s.ram_total)} GB`;
     setMeter("m-ram", s.ram_used / s.ram_total);
     $("t-rss").textContent = gb(s.proc_rss) + " GB";
     $("t-swap").textContent = gb(s.swap_used) + " GB";
-    $("t-util").textContent = s.gpu_util == null ? "–" : s.gpu_util.toFixed(0) + "%";
-    $("t-gpu-s").textContent = s.gpu_temp == null ? "" : `${s.gpu_temp.toFixed(0)} °C · ${s.gpu_power.toFixed(0)} W`;
+    $("t-util").textContent = s.gpu_util == null ? "â€“" : s.gpu_util.toFixed(0) + "%";
+    $("t-gpu-s").textContent = s.gpu_temp == null ? "" : `${s.gpu_temp.toFixed(0)} Â°C Â· ${s.gpu_power.toFixed(0)} W`;
   }
   const cur = runs.find(r => r.status === "running");
   const queued = runs.filter(r => r.status === "queued").length;
   $("t-run").textContent = cur ? fmtTime(now - cur.started_at) : "idle";
-  $("t-run-s").textContent = cur ? `${short(cur.model)} · ${cur.output}` + (queued ? ` · ${queued} queued` : "") : (queued ? `${queued} queued` : "");
+  $("t-run-s").textContent = cur ? `${short(cur.model)} Â· ${cur.output}` + (queued ? ` Â· ${queued} queued` : "") : (queued ? `${queued} queued` : "");
   if (s) {
     chart("c-vram", "vram_used", s.vram_total, now);
     chart("c-ram", "ram_used", s.ram_total, now);
   }
   table();
 }
-const fmtTime = (sec) => sec == null ? "–" : (sec >= 60 ? `${Math.floor(sec / 60)}m ${String(Math.round(sec % 60)).padStart(2, "0")}s` : `${sec.toFixed(0)}s`);
+const fmtTime = (sec) => sec == null ? "â€“" : (sec >= 60 ? `${Math.floor(sec / 60)}m ${String(Math.round(sec % 60)).padStart(2, "0")}s` : `${sec.toFixed(0)}s`);
 const short = (m) => (m || "").replace("ltx-2.5-22b-distilled-transformer-", "").replace(/\.(safetensors|gguf)$/, "");
 
 // ---------- chart (single series, one axis, crosshair tooltip) ----------
@@ -392,7 +437,7 @@ function chart(id, key, cap, now) {
     xh.setAttribute("x1", x(best.t)); xh.setAttribute("x2", x(best.t)); xh.setAttribute("visibility", "visible");
     dot.setAttribute("cx", x(best.t)); dot.setAttribute("cy", y(best[key])); dot.setAttribute("visibility", "visible");
     const ago = Math.round(now - best.t);
-    tip.innerHTML = `<b>${best[key].toFixed(2)} GB</b> · ${ago ? ago + "s ago" : "now"}`;
+    tip.innerHTML = `<b>${best[key].toFixed(2)} GB</b> Â· ${ago ? ago + "s ago" : "now"}`;
     tip.style.display = "block";
     const left = (x(best.t) / W) * bx.width;
     tip.style.left = Math.min(bx.width - tip.offsetWidth, Math.max(0, left - tip.offsetWidth / 2)) + 16 + "px";
@@ -401,50 +446,98 @@ function chart(id, key, cap, now) {
   hit.onmouseleave = () => { tip.style.display = "none"; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
 }
 
-// ---------- runs table ----------
-let tableSig = "";
+// ---------- history ----------
+let histSig = "";
+const outUrl = (v) => `/view?filename=${encodeURIComponent(v.filename)}&subfolder=${encodeURIComponent(v.subfolder || "")}&type=${v.type || "output"}`;
+const when = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+function visibleRuns() {
+  const q = $("q").value.trim().toLowerCase(), f = $("sf").value;
+  return [...runs].reverse().filter(r => {
+    if (f === "active" && !(r.status === "running" || r.status === "queued")) return false;
+    if (f && f !== "active" && r.status !== f) return false;
+    if (q && !`${r.prompt} ${r.negative || ""} ${r.model} ${r.output} ${r.seed} ${r.image || ""}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+$("q").oninput = $("sf").onchange = () => { histSig = ""; table(); };
 function table() {
-  const rows = [...runs].reverse();
-  const sig = JSON.stringify(rows.map(r => [r.prompt_id, r.status, r.seconds, r.video && r.video.filename]));
-  if (sig === tableSig) {
-    // only live cells of the running row change; keep video players untouched
-    for (const r of rows.filter(r => r.status === "running")) {
-      const tr = document.querySelector(`tr[data-id="${r.prompt_id}"]`);
-      if (!tr) continue;
-      tr.querySelector(".c-time").textContent = fmtTime(Date.now() / 1000 - r.started_at);
-      tr.querySelector(".c-vram").textContent = gb(r.peak_vram);
-      tr.querySelector(".c-torch").textContent = gb(r.peak_torch);
-      tr.querySelector(".c-ram").textContent = gb(r.peak_ram);
-      tr.querySelector(".c-swap").textContent = gb(r.peak_swap);
-    }
-    return;
-  }
-  tableSig = sig;
+  const rows = visibleRuns();
+  const sig = $("q").value + "|" + $("sf").value + "|" + JSON.stringify(rows.map(r => [r.prompt_id, r.status, r.seconds, r.video && r.video.filename]));
+  const live = (r) => {
+    const el = document.querySelector(`.run[data-id="${r.prompt_id}"] .live`);
+    if (el) el.innerHTML = liveStats(r);
+  };
+  if (sig === histSig) { rows.filter(r => r.status === "running").forEach(live); return; }
+  histSig = sig;
+  const ok = runs.filter(r => r.status === "ok"), total = ok.reduce((a, r) => a + (r.seconds || 0), 0);
+  $("histsum").textContent = `${runs.length} runs Â· ${ok.length} finished Â· ${fmtTime(total)} total render time` + (rows.length !== runs.length ? ` Â· showing ${rows.length}` : "");
   $("runs").innerHTML = rows.map(r => {
-    const v = r.video ? `/view?filename=${encodeURIComponent(r.video.filename)}&subfolder=${encodeURIComponent(r.video.subfolder || "")}&type=${r.video.type || "output"}` : null;
-    const time = r.status === "running" ? fmtTime(Date.now() / 1000 - r.started_at) : fmtTime(r.seconds);
-    return `<tr data-id="${r.prompt_id}">
-      <td><span class="status st-${r.status}">${r.status}</span>${r.error ? `<div class="err">${esc(r.error)}</div>` : ""}</td>
-      <td><span class="mono">${esc(short(r.model))}</span><div class="hint">${r.two_stage ? "two-stage" : "single"}${r.image ? " · I2V" : " · T2V"}</div></td>
-      <td>${r.output}<div class="hint">stage 1 ${r.stage1}</div></td>
-      <td class="num">${r.duration}s / ${r.frames}</td>
-      <td class="num">${r.seed}</td>
-      <td class="num c-time">${time}</td>
-      <td class="num c-vram">${gb(r.peak_vram)}</td>
-      <td class="num c-torch">${gb(r.peak_torch)}</td>
-      <td class="num c-ram">${gb(r.peak_ram)}</td>
-      <td class="num c-swap">${gb(r.peak_swap)}</td>
-      <td>${v ? `<video class="preview" src="${v}" controls preload="metadata"></video><a href="${v}" target="_blank">open</a>` : ""}</td>
-      <td>${r.status === "running" || r.status === "queued" ? "" : `<button data-del="${r.prompt_id}" title="Remove from list">✕</button>`}</td>
-    </tr>`;
-  }).join("") || `<tr><td colspan="12" class="hint">No runs yet.</td></tr>`;
+    const media = r.video
+      ? `<video src="${outUrl(r.video)}" controls preload="metadata" ${r.image ? `poster="${inputUrl(r.image)}"` : ""}></video>`
+      : r.image ? `<img src="${inputUrl(r.image)}" alt="start image">` : `<div class="noout">${r.status === "ok" ? "no video" : r.status}</div>`;
+    const active = r.status === "running" || r.status === "queued";
+    return `<div class="run" data-id="${r.prompt_id}">
+      <div class="media">${media}</div>
+      <div>
+        <div class="top"><span class="status st-${r.status}">${r.status}</span><span class="when">${when(r.queued_at)}</span></div>
+        <div class="ptext" title="Click to expand">${esc(r.prompt) || '<span class="hint">(no prompt)</span>'}</div>
+        ${r.negative ? `<div class="negt">Negative: ${esc(r.negative)}</div>` : ""}
+        ${r.error ? `<div class="err">${esc(r.error)}</div>` : ""}
+        <div class="meta2">
+          <span><b>${esc(short(r.model))}</b></span>
+          <span>${r.output}${r.two_stage ? " (two-stage)" : ""}</span>
+          <span>${r.duration}s Â· ${r.frames} frames Â· ${r.fps} fps</span>
+          <span>seed ${r.seed}</span>
+        </div>
+        <div class="meta2 live">${liveStats(r)}</div>
+        ${r.image ? `<div class="src"><img src="${inputUrl(r.image)}"><span class="hint">start image: ${esc(r.image)}</span></div>` : `<div class="hint" style="margin-top:8px">text-to-video (no start image)</div>`}
+        <div class="acts">
+          <button data-reuse="${r.prompt_id}" title="Load these settings into the form">Reuse settings</button>
+          ${r.video ? `<a href="${outUrl(r.video)}" download>Download</a><a href="${outUrl(r.video)}" target="_blank">Open</a>` : ""}
+          ${active ? `<button data-cancel="${r.prompt_id}">Cancel</button>` : `<button data-del="${r.prompt_id}" title="Removes it from this list only. The video file stays in ComfyUI/output/ltxlab">Remove</button>`}
+        </div>
+      </div>
+    </div>`;
+  }).join("") || `<div class="hint" style="padding:12px 0">No runs yet.</div>`;
+  document.querySelectorAll(".ptext").forEach(p => p.onclick = () => p.classList.toggle("open"));
+  document.querySelectorAll("[data-reuse]").forEach(b => b.onclick = () => reuse(runs.find(r => r.prompt_id === b.dataset.reuse)));
   document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    if (!confirm("Remove this run from the history? The video file stays on disk.")) return;
     await fetch("/ltxlab/api/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [b.dataset.del] }) });
     poll();
   });
+  document.querySelectorAll("[data-cancel]").forEach(b => b.onclick = async () => {
+    const r = runs.find(x => x.prompt_id === b.dataset.cancel);
+    if (r.status === "running") await fetch("/interrupt", { method: "POST" });
+    else await fetch("/queue", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ delete: [r.prompt_id] }) });
+    poll();
+  });
+}
+function liveStats(r) {
+  const t = r.status === "running" ? fmtTime(Date.now() / 1000 - r.started_at) : fmtTime(r.seconds);
+  return `<span>time <b>${t}</b></span><span>peak VRAM <b>${gb(r.peak_vram)}</b> GB</span><span>torch <b>${gb(r.peak_torch)}</b> GB</span><span>RAM <b>${gb(r.peak_ram)}</b> GB</span><span>pagefile <b>${gb(r.peak_swap)}</b> GB</span>`;
+}
+function reuse(r) {
+  const s = r.settings || r;
+  document.querySelectorAll("#models input").forEach(i => i.checked = i.value === s.model);
+  if (s.text_encoder) $("te").value = s.text_encoder;
+  const res = `${s.width || r.output.split("x")[0]}x${s.height || r.output.split("x")[1]}`;
+  document.querySelectorAll("#res input").forEach(i => i.checked = i.value === res);
+  $("dur").value = s.duration; $("fps").value = s.fps;
+  $("pipe").value = s.two_stage === false ? "one" : "two";
+  $("prompt").value = s.prompt || ""; $("neg").value = s.negative || "";
+  $("seed").value = s.seed;
+  if (s.image_strength != null) $("strength").value = s.image_strength;
+  if (s.tile_size) $("tile").value = s.tile_size;
+  if (s.temporal_size) $("ttile").value = s.temporal_size;
+  selectImage(s.image);
+  updateCount();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  msg(document.querySelector("#models input:checked") ? "" : `Model ${s.model} is not installed on this machine. Pick another one.`);
 }
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+loadUploads();
 loadOptions();
 poll();
 setInterval(poll, 1000);

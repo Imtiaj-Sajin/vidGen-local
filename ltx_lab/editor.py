@@ -286,6 +286,47 @@ async def api_library(request):
     return web.json_response(library(list(_runs.values())))
 
 
+_thumbs = {}
+
+
+def _thumb(path, t, h):
+    key = (path, os.path.getmtime(path), t, h)
+    if key in _thumbs:
+        return _thumbs[key]
+    import io
+    with av.open(path) as c:
+        v = c.streams.video[0]
+        if t > 0:
+            c.seek(int(t / v.time_base), stream=v, any_frame=False, backward=True)
+        img = None
+        for frame in c.decode(v):
+            img = frame.to_image()
+            if frame.time is None or frame.time >= t - 0.05:
+                break
+    w = max(1, round(img.width * h / img.height))
+    buf = io.BytesIO()
+    img.convert("RGB").resize((w, h)).save(buf, "JPEG", quality=72)
+    data = buf.getvalue()
+    if len(_thumbs) > 800:
+        _thumbs.clear()
+    _thumbs[key] = data
+    return data
+
+
+@routes.get("/ltxlab/api/thumb")
+async def api_thumb(request):
+    q = request.query
+    try:
+        path = resolve({"filename": q["filename"], "subfolder": q.get("subfolder", ""), "type": q.get("type", "output")})
+    except (KeyError, ValueError):
+        return web.Response(status=404)
+    t = round(max(0.0, float(q.get("t", 0))) * 2) / 2   # 0.5 s steps keep the cache small
+    h = min(400, max(40, int(q.get("h", 120))))
+    import asyncio
+    data = await asyncio.get_running_loop().run_in_executor(None, _thumb, path, t, h)
+    return web.Response(body=data, content_type="image/jpeg", headers={"Cache-Control": "max-age=86400"})
+
+
 @routes.post("/ltxlab/api/media")
 async def api_media(request):
     reader = await request.multipart()

@@ -19,6 +19,11 @@ Double-click `Start-ComfyUI.bat`, then open:
 - **LTX Lab** (test page): http://127.0.0.1:8188/ltxlab
 - **ComfyUI** (full editor): http://127.0.0.1:8188, with official workflows under Workflows → `LTX-2.5_T2V_I2V_Two_Stage_Distilled`
 
+## Crash recovery
+ComfyUI occasionally crashes (access violation in the text encoder, usually on the first run after
+the PC sat idle). `Start-ComfyUI.bat` restarts it automatically, and LTX Lab re-queues the
+interrupted run once (if it was queued within the last hour). Close the window to stop for real.
+
 ## Use it from your phone
 With ComfyUI running, double-click `Start-Remote.bat`. It prints a password (stored in `remote/password.txt`)
 and an `https://….trycloudflare.com` link. Open the link anywhere, log in once (remembered 30 days).

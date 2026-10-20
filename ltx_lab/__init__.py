@@ -34,16 +34,42 @@ _runs = {}          # prompt_id -> run record (pending/running/finished)
 _nvsmi = {"util": None, "temp": None, "power": None, "t": 0}
 
 
+_retry_queue = []   # runs interrupted by a crash/restart, re-queued once the server is up
+RETRY_WINDOW = 3600  # only auto-retry runs queued within the last hour
+
+
 def _load_results():
     try:
         with open(RESULTS_FILE, "r", encoding="utf-8") as f:
             for r in json.load(f):
                 if r["status"] in ("queued", "running"):
                     r["status"] = "cancelled"   # ComfyUI restarted before it ran
-                    r["error"] = "ComfyUI was restarted before this run finished."
+                    fresh = time.time() - r.get("queued_at", 0) < RETRY_WINDOW
+                    if fresh and r.get("settings") and not r["settings"].get("_retry"):
+                        r["error"] = "ComfyUI stopped during this run; it was re-queued automatically."
+                        _retry_queue.append(r["settings"])
+                    else:
+                        r["error"] = "ComfyUI was restarted before this run finished."
                 _runs[r["prompt_id"]] = r
     except (OSError, ValueError):
         pass
+
+
+def _retry_interrupted():
+    """Re-submit runs that a crash interrupted (once each), after the HTTP server is listening."""
+    import urllib.request
+    while _retry_queue:
+        settings = dict(_retry_queue.pop(0), _retry=1)
+        for _ in range(60):
+            try:
+                req = urllib.request.Request(f"http://127.0.0.1:{PromptServer.instance.port}/ltxlab/api/run",
+                                             data=json.dumps(settings).encode(),
+                                             headers={"Content-Type": "application/json"})
+                urllib.request.urlopen(req, timeout=30).read()
+                print("[ltx_lab] re-queued a run interrupted by a restart")
+                break
+            except Exception:
+                time.sleep(5)
 
 
 def _save_results():
@@ -247,6 +273,8 @@ async def delete(request):
 
 _load_results()
 threading.Thread(target=_sampler_loop, daemon=True, name="ltx_lab_sampler").start()
+if _retry_queue:
+    threading.Thread(target=_retry_interrupted, daemon=True, name="ltx_lab_retry").start()
 
 from . import editor  # noqa: E402,F401  (registers /ltxlab/editor routes)
 
